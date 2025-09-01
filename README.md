@@ -119,6 +119,7 @@ def calculate_risk_score(variants):
 - CSV with variant data
 - TSV (tab-separated)
 - Excel files (.xlsx)
+- VCF file support (optional)
 
 ### Required Columns
 ```python
@@ -184,9 +185,9 @@ Complex analysis workflows including:
 ## Development Roadmap (14-Day Sprint)
 
 ### Day 1: Project Foundation
-- [ ] Set up Python development environment (Python 3.9+, pip, virtualenv)
-- [ ] Create GitHub repository with initial structure
-- [ ] Initialise Python package structure with `__init__.py` files
+- [x] Set up Python development environment (Python 3.9+, pip, virtualenv)
+- [x] Create GitHub repository with initial structure
+- [x] Initialise Python package structure with `__init__.py` files
 - [ ] Set up basic `setup.py` and `requirements.txt`
 
 ### Day 2: CLI Framework
