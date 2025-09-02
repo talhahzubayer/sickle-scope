@@ -188,7 +188,7 @@ Complex analysis workflows including:
 - [x] Set up Python development environment (Python 3.9+, pip, virtualenv)
 - [x] Create GitHub repository with initial structure
 - [x] Initialise Python package structure with `__init__.py` files
-- [ ] Set up basic `setup.py` and `requirements.txt`
+- [x] Set up basic `setup.py` and `requirements.txt`
 
 ### Day 2: CLI Framework
 - [ ] Install and explore Click framework for CLI
