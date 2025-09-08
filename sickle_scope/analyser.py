@@ -26,14 +26,15 @@ class SickleAnalyser:
             'chromosome', 'position', 'ref_allele', 'alt_allele', 'genotype'
         ]
         
-        # HBB gene region (chromosome 11: 5,246,696-5,250,625)
+        # HBB gene region (chromosome 11: expanded to include all known variants)
         self.hbb_region = {
             'chromosome': '11',
-            'start': 5246696,
-            'end': 5250625
+            'start': 5200000,  # Expanded range to capture all HBB variants
+            'end': 5280000
         }
         
         self.config = self._load_default_config()
+        self.hbb_variants_db = self._load_hbb_variants_database()
         
         if self.verbose:
             print("SickleAnalyser initialised successfully")
@@ -51,6 +52,32 @@ class SickleAnalyser:
                 'severe': 1.0
             }
         }
+    
+    def _load_hbb_variants_database(self) -> Dict:
+        """Load HBB variants database from JSON file.
+        
+        Returns:
+            Dictionary containing variant database
+        """
+        try:
+            # Get path to the data directory relative to this file
+            current_dir = Path(__file__).parent
+            db_path = current_dir / 'data' / 'hbb_variants.json'
+            
+            with open(db_path, 'r', encoding='utf-8') as f:
+                db = json.load(f)
+            
+            if self.verbose:
+                pathogenic_count = len(db.get('pathogenic_variants', {}))
+                modifier_count = sum(len(modifiers) for modifiers in db.get('modifier_variants', {}).values())
+                print(f"Loaded HBB database: {pathogenic_count} pathogenic variants, {modifier_count} modifiers")
+                
+            return db
+            
+        except Exception as e:
+            if self.verbose:
+                print(f"Warning: Could not load HBB variants database: {e}")
+            return {}
     
     def load_config(self, config_path: Union[str, Path]) -> None:
         """Load configuration from JSON file.
@@ -191,75 +218,174 @@ class SickleAnalyser:
         
         return df[hbb_mask].copy()
     
-    def _classify_variant(self, variant: pd.Series) -> str:
+    def _classify_variant(self, variant: pd.Series) -> Dict:
         """Classify a single variant as pathogenic, benign, or uncertain.
         
         Args:
             variant: Single variant data
             
         Returns:
-            Classification string
+            Dictionary with classification details
         """
-        # Simple classification based on known pathogenic positions
-        # In a real implementation, this would use a comprehensive database
-        known_pathogenic_positions = {
-            5248232,  # HbS (Glu6Val)
-            5248158,  # HbC (Glu6Lys)
-            5247359,  # HbE (Glu26Lys)
-        }
+        # Check against pathogenic variants database
+        pathogenic_variants = self.hbb_variants_db.get('pathogenic_variants', {})
         
-        if variant['position'] in known_pathogenic_positions:
-            return 'pathogenic'
-        elif variant['genotype'] in ['0/0']:
-            return 'benign'
+        for variant_id, var_data in pathogenic_variants.items():
+            if (variant['chromosome'] == str(var_data['chromosome']) and 
+                variant['position'] == var_data['position'] and
+                variant['ref_allele'] == var_data['ref'] and
+                variant['alt_allele'] == var_data['alt']):
+                
+                return {
+                    'classification': 'pathogenic',
+                    'variant_id': variant_id,
+                    'variant_name': var_data['name'],
+                    'severity_score': var_data['severity_score'],
+                    'disease': var_data.get('disease', 'unknown'),
+                    'mechanism': var_data.get('mechanism', 'unknown')
+                }
+        
+        # Check modifier variants
+        modifier_variants = self.hbb_variants_db.get('modifier_variants', {})
+        for gene, variants in modifier_variants.items():
+            for variant_id, var_data in variants.items():
+                if (variant['chromosome'] == str(var_data['chromosome']) and 
+                    variant['position'] == var_data['position'] and
+                    variant['ref_allele'] == var_data['ref'] and
+                    variant['alt_allele'] == var_data['alt']):
+                    
+                    return {
+                        'classification': 'modifier',
+                        'variant_id': variant_id,
+                        'variant_name': var_data['name'],
+                        'modifier_score': var_data['modifier_score'],
+                        'effect': var_data['effect'],
+                        'gene': gene
+                    }
+        
+        # Default classification for unknown variants
+        if variant['genotype'] == '0/0':
+            return {
+                'classification': 'benign',
+                'variant_id': 'unknown',
+                'variant_name': 'wild_type',
+                'severity_score': 0
+            }
         else:
-            return 'uncertain'
+            return {
+                'classification': 'uncertain',
+                'variant_id': 'unknown',
+                'variant_name': 'novel_variant',
+                'severity_score': 2
+            }
         
-    def _calculate_risk_score(self, variant: pd.Series) -> float:
-        """Calculate risk score for a variant.
+    def _calculate_risk_score(self, variant_row: pd.Series, variant_classification: Dict) -> float:
+        """Calculate risk score for a variant using weighted algorithm.
         
         Args:
-            variant: Single variant data
+            variant_row: Single variant data row
+            variant_classification: Classification details from _classify_variant
             
         Returns:
-            Risk score between 0 and 1
+            Risk score between 0 and 100
         """
+        # Get scoring algorithm weights from database
+        scoring_algorithm = self.hbb_variants_db.get('scoring_algorithm', {})
+        weights = scoring_algorithm.get('weights', {
+            'primary_mutation': 0.60,
+            'bcl11a_modifiers': 0.20,
+            'hbs1l_myb_modifiers': 0.10,
+            'other_modifiers': 0.10
+        })
+        max_score = scoring_algorithm.get('max_score', 100)
+        
         base_score = 0.0
         
-        # Score based on variant classification
-        if variant['variant_classification'] == 'pathogenic':
-            base_score = 0.8
-        elif variant['variant_classification'] == 'uncertain':
-            base_score = 0.3
+        # Score based on variant classification and severity
+        if variant_classification['classification'] == 'pathogenic':
+            severity_score = variant_classification.get('severity_score', 5)
+            base_score = severity_score * weights['primary_mutation']
+            
+        elif variant_classification['classification'] == 'modifier':
+            # Modifier variants contribute negatively (protective effect)
+            modifier_score = abs(variant_classification.get('modifier_score', -2))
+            gene = variant_classification.get('gene', 'other')
+            
+            if gene == 'BCL11A':
+                base_score = modifier_score * weights['bcl11a_modifiers']
+            elif gene == 'HBS1L_MYB':
+                base_score = modifier_score * weights['hbs1l_myb_modifiers']
+            else:
+                base_score = modifier_score * weights['other_modifiers']
+                
+        elif variant_classification['classification'] == 'uncertain':
+            base_score = variant_classification.get('severity_score', 2) * weights['primary_mutation']
         
-        # Adjust based on genotype
+        # Adjust based on genotype (zygosity impact)
         genotype_multipliers = {
-            '1/1': 1.0,  # Homozygous
-            '0/1': 0.6,  # Heterozygous
-            '0/0': 0.0   # Wild type
+            '1/1': 1.0,  # Homozygous - full impact
+            '0/1': 0.5,  # Heterozygous - reduced impact
+            '0/0': 0.0   # Wild type - no impact
         }
         
-        multiplier = genotype_multipliers.get(variant['genotype'], 0.5)
+        multiplier = genotype_multipliers.get(variant_row['genotype'], 0.25)
+        final_score = base_score * multiplier
         
-        return min(base_score * multiplier, 1.0)
+        # Handle protective modifiers (negative scores become protective)
+        if variant_classification['classification'] == 'modifier':
+            modifier_score_raw = variant_classification.get('modifier_score', -2)
+            if modifier_score_raw < 0:
+                # Protective modifier - subtract from risk
+                final_score = modifier_score_raw * multiplier  # This will be negative
+        
+        return min(max(final_score, -20), max_score)  # Cap between -20 and max_score
     
-    def _predict_severity(self, risk_score: float) -> str:
+    def _predict_severity(self, risk_score: float) -> Dict:
         """Predict disease severity based on risk score.
         
         Args:
-            risk_score: Calculated risk score
+            risk_score: Calculated risk score (0-100 scale)
             
         Returns:
-            Severity prediction string
+            Dictionary with severity prediction and details
         """
-        thresholds = self.config['severity_thresholds']
+        # Get severity categories from database
+        severity_categories = self.hbb_variants_db.get('severity_categories', {
+            'minimal_risk': {'score_range': [0, 20]},
+            'carrier_status': {'score_range': [20, 40]},
+            'moderate_risk': {'score_range': [40, 70]},
+            'high_risk': {'score_range': [70, 100]}
+        })
         
-        if risk_score < thresholds['mild']:
-            return 'mild'
-        elif risk_score < thresholds['moderate']:
-            return 'moderate'
-        else:
-            return 'severe'
+        for category, data in severity_categories.items():
+            score_range = data['score_range']
+            if score_range[0] <= risk_score <= score_range[1]:
+                return {
+                    'severity_category': category,
+                    'description': data.get('description', category.replace('_', ' ')),
+                    'management': data.get('management', 'Consult healthcare provider'),
+                    'monitoring': data.get('monitoring', 'Regular check-ups'),
+                    'score': risk_score
+                }
+        
+        # Handle negative scores (protective modifiers)
+        if risk_score < 0:
+            return {
+                'severity_category': 'protective_factors',
+                'description': 'Protective genetic factors present',
+                'management': 'Beneficial genetic profile',
+                'monitoring': 'Standard care',
+                'score': risk_score
+            }
+        
+        # Fallback for scores outside defined ranges
+        return {
+            'severity_category': 'unknown',
+            'description': 'Unable to determine severity',
+            'management': 'Consult genetic counselor',
+            'monitoring': 'Follow up recommended',
+            'score': risk_score
+        }
     
     def analyse_file(self, file_path: Union[str, Path]) -> pd.DataFrame:
         """Analyse genetic variants from input file.
@@ -283,21 +409,39 @@ class SickleAnalyser:
         # Standardise data format
         df = self._standardise_data(df)
         
-        # Filter for HBB region variants
+        # Filter for HBB region variants (for reporting only)
         hbb_variants = self._filter_hbb_variants(df)
         
         if self.verbose:
             print(f"Found {len(hbb_variants)} variants in HBB region")
+            print(f"Total variants for analysis: {len(df)}")
         
-        # Classify variants
-        df['variant_classification'] = df.apply(self._classify_variant, axis=1)
+        # Classify variants and extract detailed information
+        classifications = df.apply(self._classify_variant, axis=1)
+        
+        # Extract classification details into separate columns
+        df['variant_classification'] = [c['classification'] for c in classifications]
+        df['variant_id'] = [c.get('variant_id', 'unknown') for c in classifications]
+        df['variant_name'] = [c.get('variant_name', 'unknown') for c in classifications]
         df['is_pathogenic'] = df['variant_classification'] == 'pathogenic'
+        df['is_modifier'] = df['variant_classification'] == 'modifier'
         
-        # Calculate risk scores
-        df['risk_score'] = df.apply(self._calculate_risk_score, axis=1)
+        # Calculate risk scores using the new weighted algorithm
+        risk_scores = []
+        severity_predictions = []
         
-        # Predict severity
-        df['severity_prediction'] = df['risk_score'].apply(self._predict_severity)
+        for idx, (_, row) in enumerate(df.iterrows()):
+            classification = classifications.iloc[idx]
+            risk_score = self._calculate_risk_score(row, classification)
+            risk_scores.append(risk_score)
+            
+            severity_pred = self._predict_severity(risk_score)
+            severity_predictions.append(severity_pred)
+        
+        df['risk_score'] = risk_scores
+        df['severity_category'] = [s['severity_category'] for s in severity_predictions]
+        df['severity_description'] = [s['description'] for s in severity_predictions]
+        df['clinical_management'] = [s['management'] for s in severity_predictions]
         
         if self.verbose:
             pathogenic_count = df['is_pathogenic'].sum()
@@ -330,20 +474,36 @@ class SickleAnalyser:
         with open(output_path, 'w') as f:
             f.write(report_html)
     
-    def generate_plots(self, results: pd.DataFrame, output_dir: Union[str, Path]) -> None:
-        """Generate visualisation plots.
+    def generate_plots(self, results: pd.DataFrame, output_dir: Union[str, Path]):
+        """Generate visualisation plots using the SickleVisualiser.
         
         Args:
             results: Analysis results DataFrame
             output_dir: Directory to save plots
         """
-        # Placeholder for plot generation
-        output_dir = Path(output_dir)
-        output_dir.mkdir(exist_ok=True)
+        from .visualiser import SickleVisualiser
         
-        # This would contain actual plotting code using matplotlib/seaborn
+        output_dir = Path(output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
         if self.verbose:
-            print(f"Plots would be generated in: {output_dir}")
+            print(f"Generating visualizations in: {output_dir}")
+        
+        # Initialize visualizer
+        visualizer = SickleVisualiser()
+        
+        # Generate comprehensive plots
+        plot_paths = visualizer.create_comprehensive_report_plots(results, output_dir)
+        
+        # Generate summary statistics
+        stats = visualizer.generate_summary_statistics(results)
+        
+        if self.verbose:
+            print(f"Generated {len(plot_paths)} visualization plots")
+            print(f"Summary: {stats['pathogenic_variants']} pathogenic, {stats['modifier_variants']} modifier variants")
+            print(f"Mean risk score: {stats['mean_risk_score']:.2f}")
+        
+        return plot_paths
     
     def analyse_csv(self, csv_path: Union[str, Path]) -> pd.DataFrame:
         """Convenience method for analysing CSV files.

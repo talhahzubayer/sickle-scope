@@ -1,0 +1,563 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "08-09-2025",
+    "reference_genome": "GRCh38/hg38",
+    "sources": ["ClinVar", "OMIM", "dbSNP", "gnomAD", "1000Genomes", "MedlinePlus", "PubMed"],
+    "database_description": "Comprehensive HBB gene pathogenic variants and protective modifiers for sickle cell disease risk assessment"
+  },
+  
+  "pathogenic_variants": {
+    "rs334": {
+      "name": "HbS - Sickle Cell Variant",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5227002,
+      "ref": "T",
+      "alt": "A",
+      "hgvs_c": "c.20A>T",
+      "hgvs_p": "p.Glu6Val",
+      "amino_acid_change": "β6 Glu→Val",
+      "clinical_significance": "pathogenic",
+      "clinvar_id": "VCV000015333.166",
+      "omim_id": "603903",
+      "disease": "sickle_cell_disease",
+      "severity_score": 10,
+      "inheritance_pattern": "autosomal_recessive",
+      "mechanism": "hemoglobin_polymerisation",
+      "frequency": {
+        "african_american": 0.043,
+        "west_african": 0.15,
+        "east_african": 0.15,
+        "european": 0.001,
+        "global": 0.01
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "severe_sickle_cell_disease",
+          "severity": "severe",
+          "complications": ["vaso_occlusive_crises", "acute_chest_syndrome", "stroke"]
+        },
+        "heterozygous": {
+          "phenotype": "sickle_cell_trait",
+          "severity": "asymptomatic",
+          "benefit": "malaria_protection"
+        },
+        "compound_het_with_beta_thal": {
+          "phenotype": "sickle_beta_thalassemia",
+          "severity": "moderate_to_severe"
+        }
+      }
+    },
+    
+    "rs33930165": {
+      "name": "HbC Variant",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226980,
+      "ref": "G",
+      "alt": "A",
+      "hgvs_p": "p.Glu6Lys",
+      "amino_acid_change": "β6 Glu→Lys",
+      "clinical_significance": "pathogenic",
+      "disease": "hemoglobin_c_disease",
+      "severity_score": 6,
+      "inheritance_pattern": "autosomal_recessive",
+      "frequency": {
+        "african": 0.0034,
+        "west_african": 0.02,
+        "global": 0.0005
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "hbc_disease",
+          "severity": "mild",
+          "complications": ["mild_anemia", "splenomegaly"]
+        },
+        "heterozygous": {
+          "phenotype": "hbc_trait",
+          "severity": "asymptomatic"
+        },
+        "compound_het_with_hbs": {
+          "phenotype": "hbsc_disease",
+          "severity": "moderate"
+        }
+      }
+    },
+    
+    "rs33950507": {
+      "name": "HbE Variant",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226918,
+      "ref": "G",
+      "alt": "A",
+      "hgvs_p": "p.Glu26Lys",
+      "amino_acid_change": "β26 Glu→Lys",
+      "clinical_significance": "pathogenic",
+      "disease": "hemoglobin_e_disease",
+      "severity_score": 5,
+      "inheritance_pattern": "autosomal_recessive",
+      "frequency": {
+        "southeast_asian": 0.0028,
+        "thai": 0.43,
+        "global": 0.02
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "hbe_disease",
+          "severity": "mild",
+          "complications": ["mild_thalassemia_phenotype"]
+        },
+        "heterozygous": {
+          "phenotype": "hbe_trait",
+          "severity": "asymptomatic"
+        },
+        "compound_het_with_beta_thal": {
+          "phenotype": "hbe_beta_thalassemia",
+          "severity": "severe"
+        }
+      }
+    },
+    
+    "rs33946267": {
+      "name": "HbD Punjab/Los Angeles",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226820,
+      "ref": "G",
+      "alt": "C",
+      "hgvs_p": "p.Glu121Gln",
+      "amino_acid_change": "β121 Glu→Gln",
+      "clinical_significance": "pathogenic",
+      "disease": "hemoglobin_d_disease",
+      "severity_score": 4,
+      "inheritance_pattern": "autosomal_recessive",
+      "frequency": {
+        "punjabi": 0.02,
+        "northern_indian": 0.01,
+        "global": 0.0001
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "hbd_disease",
+          "severity": "mild",
+          "complications": ["mild_hemolytic_anemia"]
+        },
+        "heterozygous": {
+          "phenotype": "hbd_trait",
+          "severity": "asymptomatic"
+        }
+      }
+    },
+    
+    "ivs1_1": {
+      "name": "IVS1-1 G>A Splice Donor",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226937,
+      "ref": "G",
+      "alt": "A",
+      "hgvs_c": "c.92+1G>A",
+      "molecular_change": "splice_donor_mutation",
+      "clinical_significance": "pathogenic",
+      "disease": "beta_zero_thalassemia",
+      "severity_score": 9,
+      "thalassemia_type": "beta_zero",
+      "beta_globin_production": 0,
+      "frequency": {
+        "mediterranean": 0.02,
+        "italian": 0.03,
+        "global": 0.001
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "thalassemia_major",
+          "severity": "severe",
+          "treatment": "transfusion_dependent"
+        },
+        "heterozygous": {
+          "phenotype": "thalassemia_minor",
+          "severity": "mild"
+        },
+        "compound_het_with_hbs": {
+          "phenotype": "severe_sickle_beta_thal",
+          "severity": "severe"
+        }
+      }
+    },
+    
+    "rs11549407": {
+      "name": "Codon 39 Nonsense",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226970,
+      "ref": "C",
+      "alt": "T",
+      "hgvs_c": "c.118C>T",
+      "hgvs_p": "p.Gln39*",
+      "amino_acid_change": "nonsense_mutation",
+      "clinical_significance": "pathogenic",
+      "disease": "beta_zero_thalassemia",
+      "severity_score": 9,
+      "thalassemia_type": "beta_zero",
+      "beta_globin_production": 0,
+      "frequency": {
+        "sardinian": 0.954,
+        "mediterranean": 0.05,
+        "global": 0.0005
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "thalassemia_major",
+          "severity": "severe",
+          "treatment": "transfusion_dependent"
+        },
+        "heterozygous": {
+          "phenotype": "thalassemia_minor",
+          "severity": "mild"
+        }
+      }
+    },
+    
+    "ivs1_110": {
+      "name": "IVS1-110 G>A Cryptic Splice",
+      "gene": "HBB",
+      "chromosome": 11,
+      "position": 5226845,
+      "ref": "G",
+      "alt": "A",
+      "hgvs_c": "c.93-21G>A",
+      "molecular_change": "cryptic_splice_acceptor",
+      "clinical_significance": "pathogenic",
+      "disease": "beta_plus_thalassemia",
+      "severity_score": 7,
+      "thalassemia_type": "beta_plus",
+      "beta_globin_production": 0.15,
+      "mechanism": "creates_aberrant_splice_acceptor_19bp_upstream",
+      "frequency": {
+        "turkish": 0.45,
+        "mediterranean": 0.08,
+        "global": 0.001
+      },
+      "clinical_impact": {
+        "homozygous": {
+          "phenotype": "thalassemia_intermedia",
+          "severity": "moderate"
+        },
+        "heterozygous": {
+          "phenotype": "thalassemia_minor",
+          "severity": "mild"
+        }
+      }
+    }
+  },
+  
+  "modifier_variants": {
+    "BCL11A": {
+      "rs1427407": {
+        "name": "BCL11A Major HbF Inducer",
+        "chromosome": 2,
+        "position": 60718043,
+        "region": "BCL11A_erythroid_specific_enhancer",
+        "ref": "G",
+        "alt": "T",
+        "effect": "increased_HbF",
+        "modifier_score": -3,
+        "mechanism": "disrupts_BCL11A_enhancer",
+        "hbf_variance_explained": 0.23,
+        "hbf_increase": 0.15,
+        "frequency": {
+          "african": 0.24,
+          "european": 0.10,
+          "global": 0.15
+        },
+        "clinical_benefit": "reduced_scd_severity"
+      },
+      
+      "rs4671393": {
+        "name": "BCL11A Strongest HbF Association",
+        "chromosome": 2,
+        "position": 60716189,
+        "region": "BCL11A_intron_2",
+        "ref": "G",
+        "alt": "A",
+        "effect": "increased_HbF",
+        "modifier_score": -4,
+        "mechanism": "BCL11A_expression_reduction",
+        "statistical_significance": "2e-42",
+        "hbf_variance_explained": 0.181,
+        "hbf_increase": 0.20,
+        "frequency": {
+          "african": 0.18,
+          "european": 0.08,
+          "global": 0.12
+        },
+        "clinical_benefit": "improved_survival"
+      },
+      
+      "rs11886868": {
+        "name": "BCL11A Intronic Modifier",
+        "chromosome": 2,
+        "position": 60718023,
+        "region": "BCL11A_intron_2",
+        "ref": "T",
+        "alt": "C",
+        "effect": "increased_HbF",
+        "modifier_score": -2,
+        "mechanism": "BCL11A_regulatory_variant",
+        "hbf_variance_explained": 0.14,
+        "hbf_increase": 0.10,
+        "frequency": {
+          "african": 0.39,
+          "european": 0.20,
+          "global": 0.25
+        },
+        "clinical_benefit": "mild_amelioration"
+      }
+    },
+    
+    "HBS1L_MYB": {
+      "rs9399137": {
+        "name": "HMIP-2 Tag SNP",
+        "chromosome": 6,
+        "position": 135419018,
+        "region": "HBS1L_MYB_intergenic_HMIP2_block",
+        "ref": "T",
+        "alt": "C",
+        "effect": "increased_HbF",
+        "modifier_score": -3,
+        "mechanism": "MYB_enhancer_regulation",
+        "f_cell_variance_explained": 0.176,
+        "hbf_increase": 0.12,
+        "frequency": {
+          "african": 0.15,
+          "european": 0.22,
+          "global": 0.18
+        },
+        "clinical_benefit": "reduced_sickling_crises"
+      },
+      
+      "rs4895441": {
+        "name": "HBS1L-MYB Modifier",
+        "chromosome": 6,
+        "position": 135426177,
+        "region": "HBS1L_intron",
+        "effect": "increased_HbF",
+        "modifier_score": -2,
+        "mechanism": "intergenic_regulatory",
+        "hbf_increase": 0.08,
+        "frequency": {
+          "african": 0.20,
+          "european": 0.25,
+          "global": 0.22
+        },
+        "clinical_benefit": "reduced_vaso_occlusive_crises",
+        "population_validation": "confirmed_across_ethnic_groups"
+      }
+    }
+  },
+  
+  "novel_variants_2020_2025": {
+    "saudi_arabian": [
+      {
+        "name": "c.252C>T",
+        "hgvs_c": "c.252C>T",
+        "type": "exonic",
+        "clinical_significance": "pathogenic"
+      },
+      {
+        "name": "c.281G>T",
+        "hgvs_c": "c.281G>T",
+        "type": "exonic",
+        "clinical_significance": "pathogenic"
+      },
+      {
+        "name": "c.316-183_316-168del",
+        "hgvs_c": "c.316-183_316-168del",
+        "type": "intronic_deletion",
+        "clinical_significance": "pathogenic"
+      }
+    ],
+    "turkish_syrian": [
+      {
+        "name": "c.31_32insT",
+        "hgvs_c": "c.31_32insT",
+        "type": "frameshift",
+        "population": "syrian",
+        "clinical_significance": "pathogenic"
+      }
+    ],
+    "pakistani": [
+      {
+        "name": "c.375A>C",
+        "hgvs_c": "c.375A>C",
+        "hgvs_p": "p.P125P",
+        "type": "synonymous_affects_splicing",
+        "clinical_significance": "pathogenic"
+      },
+      {
+        "name": "c.*61T>G",
+        "hgvs_c": "c.*61T>G",
+        "type": "3_utr_variant",
+        "mechanism": "affects_stability",
+        "clinical_significance": "pathogenic"
+      }
+    ]
+  },
+  
+  "haplotypes": {
+    "bantu": {
+      "name": "Bantu",
+      "severity": "severe",
+      "hbf_baseline": 0.05,
+      "geographic_origin": "central_africa",
+      "marker_snps": ["rs3834466", "rs28440105"],
+      "clinical_features": "severe_vaso_occlusive_crises",
+      "severity_rank": 1
+    },
+    "benin": {
+      "name": "Benin",
+      "severity": "intermediate",
+      "hbf_baseline": 0.08,
+      "geographic_origin": "west_africa",
+      "marker_snps": ["rs968857", "rs10128556"],
+      "clinical_features": "moderate_disease_course",
+      "severity_rank": 2
+    },
+    "senegal": {
+      "name": "Senegal",
+      "severity": "mild",
+      "hbf_baseline": 0.12,
+      "geographic_origin": "atlantic_west_africa",
+      "marker_snps": ["rs7482144"],
+      "clinical_features": "higher_hbf_better_prognosis",
+      "severity_rank": 3
+    },
+    "arab_indian": {
+      "name": "Arab-Indian",
+      "severity": "mild",
+      "hbf_baseline": 0.15,
+      "geographic_origin": "arabian_peninsula_india",
+      "marker_snps": ["rs10837631"],
+      "clinical_features": "mildest_scd_phenotype",
+      "severity_rank": 4
+    }
+  },
+  
+  "scoring_algorithm": {
+    "weights": {
+      "primary_mutation": 0.60,
+      "bcl11a_modifiers": 0.20,
+      "hbs1l_myb_modifiers": 0.10,
+      "other_modifiers": 0.10
+    },
+    "normalisation_factor": 5,
+    "max_score": 100
+  },
+  
+  "severity_categories": {
+    "minimal_risk": {
+      "score_range": [0, 20],
+      "description": "No sickle cell disease",
+      "management": "No intervention needed",
+      "monitoring": "Standard care"
+    },
+    "carrier_status": {
+      "score_range": [20, 40],
+      "description": "Sickle cell trait or thalassemia minor",
+      "management": "Genetic counseling recommended",
+      "monitoring": "Annual check-up"
+    },
+    "moderate_risk": {
+      "score_range": [40, 70],
+      "description": "Mild to moderate sickle cell disease",
+      "management": "Regular monitoring, consider hydroxyurea",
+      "monitoring": "Quarterly visits"
+    },
+    "high_risk": {
+      "score_range": [70, 100],
+      "description": "Severe sickle cell disease",
+      "management": "Aggressive treatment, consider gene therapy",
+      "monitoring": "Monthly visits, comprehensive care"
+    }
+  },
+  
+  "clinical_thresholds": {
+    "protective_hbf_level": 0.15,
+    "therapeutic_hbf_target": 0.30,
+    "survival_benefit_hbf": 0.086,
+    "transfusion_dependency_score": 80,
+    "hydroxyurea_consideration": 50,
+    "gene_therapy_eligibility": 70,
+    "hydroxyurea_response_predictors": ["rs1427407", "rs4671393"]
+  },
+  
+  "genotype_severity_hierarchy": [
+    {
+      "rank": 1,
+      "genotype": "HbSS",
+      "description": "Homozygous sickle cell disease",
+      "severity": "most_severe"
+    },
+    {
+      "rank": 1,
+      "genotype": "HbS/β⁰-thalassemia",
+      "description": "Sickle beta-zero thalassemia",
+      "severity": "most_severe"
+    },
+    {
+      "rank": 2,
+      "genotype": "HbS/β⁺-thalassemia",
+      "description": "Sickle beta-plus thalassemia",
+      "severity": "intermediate"
+    },
+    {
+      "rank": 3,
+      "genotype": "HbSC",
+      "description": "Hemoglobin SC disease",
+      "severity": "variable_mild_to_moderate"
+    }
+  ],
+  
+  "population_considerations": {
+    "african": {
+      "rs334_frequency": 0.043,
+      "regional_variation": {
+        "west_africa": "10-19%",
+        "east_africa": "10-20%",
+        "southern_africa": "<2%"
+      },
+      "haplotype_diversity": ["bantu", "benin", "senegal", "cameroon"]
+    },
+    "mediterranean": {
+      "beta_thalassemia_predominance": true,
+      "common_variants": ["codon_39", "ivs1_110", "ivs1_1", "ivs1_5_6"],
+      "founder_effects": "strong_regional_clustering"
+    },
+    "asian": {
+      "hbe_prevalence": "up_to_43_percent_southeast_asia",
+      "beta_thalassemia_variants": "population_specific",
+      "modifier_frequencies": "lower_hbs1l_myb_variants"
+    }
+  },
+  
+  "clinical_implementation": {
+    "genetic_testing_strategy": {
+      "primary_screening": ["HPLC", "IEF", "complete_blood_count"],
+      "confirmatory_testing": "NGS_based_HBB_analysis",
+      "modifier_analysis": ["BCL11A_variants", "HBS1L_MYB_variants"]
+    },
+    "risk_assessment_steps": [
+      "primary_genotype_determination",
+      "hbf_modifier_scoring",
+      "population_specific_adjustment",
+      "clinical_severity_prediction"
+    ],
+    "therapeutic_implications": {
+      "gene_therapy_eligible": ["HbSS", "HbS/β⁰-thal"],
+      "hydroxyurea_enhanced_response": ["rs1427407", "rs4671393"],
+      "family_planning": "carrier_screening_risk_assessment"
+    }
+  }
+}

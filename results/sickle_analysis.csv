@@ -1,6 +1,6 @@
-chromosome,position,ref_allele,alt_allele,genotype,variant_classification,is_pathogenic,risk_score,severity_prediction
-11,5248232,A,T,1/1,pathogenic,True,0.8,severe
-11,5248158,G,A,0/1,pathogenic,True,0.48,moderate
-11,5247359,G,A,1/1,pathogenic,True,0.8,severe
-11,5248000,C,G,0/1,uncertain,False,0.18,mild
-11,5249000,T,A,0/0,benign,False,0.0,mild
+chromosome,position,ref_allele,alt_allele,genotype,variant_classification,variant_id,variant_name,is_pathogenic,is_modifier,risk_score,severity_category,severity_description,clinical_management
+11,5248232,A,T,1/1,uncertain,unknown,novel_variant,False,False,1.2,minimal_risk,No sickle cell disease,No intervention needed
+11,5248158,G,A,0/1,uncertain,unknown,novel_variant,False,False,0.6,minimal_risk,No sickle cell disease,No intervention needed
+11,5247359,G,A,1/1,uncertain,unknown,novel_variant,False,False,1.2,minimal_risk,No sickle cell disease,No intervention needed
+11,5248000,C,G,0/1,uncertain,unknown,novel_variant,False,False,0.6,minimal_risk,No sickle cell disease,No intervention needed
+11,5249000,T,A,0/0,benign,unknown,wild_type,False,False,0.0,minimal_risk,No sickle cell disease,No intervention needed

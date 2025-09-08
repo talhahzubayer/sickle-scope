@@ -235,16 +235,16 @@ Complex analysis workflows including:
 - [x] Create sample CSV files with test data
 
 ### Day 4: Risk Scoring Algorithm
-- [ ] Research and compile HBB pathogenic variants database
-- [ ] Implement basic variant classification (pathogenic/benign)
-- [ ] Create risk scoring function with weighted algorithm
-- [ ] Test algorithm with known variants
+- [x] Research and compile HBB pathogenic variants database
+- [x] Implement basic variant classification (pathogenic/benign)
+- [x] Create risk scoring function with weighted algorithm
+- [x] Test algorithm with known variants
 
 ### Day 5: Visualisation Framework
-- [ ] Set up matplotlib and seaborn for plotting
-- [ ] Create basic risk score visualisation (gauge plot)
-- [ ] Implement variant distribution plots
-- [ ] Test visualisations with sample data
+- [x] Set up matplotlib and seaborn for plotting
+- [x] Create basic risk score visualisation (gauge plot)
+- [x] Implement variant distribution plots
+- [x] Test visualisations with sample data
 
 ### Day 6: Jupyter Tutorial Notebook
 - [ ] Create comprehensive `tutorial.ipynb`
