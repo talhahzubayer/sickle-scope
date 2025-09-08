@@ -32,7 +32,14 @@ sickle-scope/
 │   └── advanced.ipynb      # Deep-dive analysis
 ├── tests/
 │   ├── test_analyser.py
-│   └── sample_data/
+│   └── sample_data/        # Test input files
+│       ├── test_variants.csv
+│       ├── hbb_variants.csv
+│       └── invalid_data.csv
+├── results/                # Analysis outputs (created automatically)
+│   ├── sickle_analysis.csv # Analysis results
+│   ├── sickle_report.html  # HTML report
+│   └── plots/              # Visualisation plots
 ├── setup.py
 ├── requirements.txt
 └── README.md
@@ -69,16 +76,41 @@ sickle-scope/
 
 ### Command Line Interface
 ```bash
-# Basic analysis
-sickle-analyse variants.csv
+# Basic analysis (saves to current directory)
+python -m sickle_scope.cli analyse variants.csv
 
-# Advanced options
-sickle-analyse variants.csv \
+# Organised output with reports and plots
+python -m sickle_scope.cli analyse variants.csv \
   --output results/ \
+  --report \
+  --plot \
+  --verbose
+
+# Validate input data before analysis
+python -m sickle_scope.cli validate variants.csv
+
+# Get package information
+python -m sickle_scope.cli info
+
+# Full workflow example
+python -m sickle_scope.cli analyse tests/sample_data/hbb_variants.csv \
+  --output my_analysis/ \
   --report \
   --plot \
   --verbose \
   --config custom_params.json
+```
+
+### Output Directory Structure
+When using `--output results/`, SickleScope creates an organised directory structure:
+```
+results/
+├── sickle_analysis.csv     # Main results file with variant classifications
+├── sickle_report.html      # Comprehensive HTML report (--report flag)
+└── plots/                  # Visualisation directory (--plot flag)
+    ├── risk_score_plot.png
+    ├── variant_distribution.png
+    └── severity_prediction.png
 ```
 
 ### Python API
@@ -191,16 +223,16 @@ Complex analysis workflows including:
 - [x] Set up basic `setup.py` and `requirements.txt`
 
 ### Day 2: CLI Framework
-- [ ] Install and explore Click framework for CLI
-- [ ] Create basic `cli.py` with argument parsing
-- [ ] Implement `--help` documentation and basic commands
-- [ ] Test CLI installation with `pip install -e .`
+- [x] Install and explore Click framework for CLI
+- [x] Create basic `cli.py` with argument parsing
+- [x] Implement `--help` documentation and basic commands
+- [x] Test CLI installation with `pip install -e .`
 
 ### Day 3: Data Processing Pipeline
-- [ ] Create `analyser.py` with pandas CSV reading functions
-- [ ] Implement data validation (required columns, data types)
-- [ ] Build variant filtering functions for chromosome 11 (HBB region)
-- [ ] Create sample CSV files with test data
+- [x] Create `analyser.py` with pandas CSV reading functions
+- [x] Implement data validation (required columns, data types)
+- [x] Build variant filtering functions for chromosome 11 (HBB region)
+- [x] Create sample CSV files with test data
 
 ### Day 4: Risk Scoring Algorithm
 - [ ] Research and compile HBB pathogenic variants database
@@ -293,7 +325,7 @@ python -m pytest tests/
 ### Testing
 ```bash
 # Run unit tests
-python -m pytest tests/test_analyzer.py
+python -m pytest tests/test_analyser.py
 
 # Run integration tests with sample data
 python -m pytest tests/ --integration

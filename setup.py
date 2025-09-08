@@ -69,7 +69,7 @@ setup(
     # Create command-line script
     entry_points={
         "console_scripts": [
-            "sickle-analyse=sickle_scope.cli:main",
+            "sickle-analyse=sickle_scope.cli:cli",
         ],
     },
 )

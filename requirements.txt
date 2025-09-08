@@ -6,7 +6,7 @@ numpy>=1.21.0          # Numerical computing
 # Visualisation
 matplotlib>=3.4.0      # Basic plotting
 seaborn>=0.11.0        # Statistical plots
-plotly>=5.0.0          # Interactive visualizations
+plotly>=5.0.0          # Interactive visualisations
 
 # Data processing
 scipy>=1.7.0           # Scientific computing
