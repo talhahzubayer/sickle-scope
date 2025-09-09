@@ -29,7 +29,8 @@ def cli(ctx):
 @click.option('--plot', is_flag=True, help='Generate visualisation plots')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.option('--config', type=click.Path(exists=True), help='Configuration file path')
-def analyse(input_file, output, report, plot, verbose, config):
+@click.option('--no-ml', is_flag=True, help='Disable machine learning predictions')
+def analyse(input_file, output, report, plot, verbose, config, no_ml):
     """Analyse genetic variants for sickle cell disease risk assessment.
     
     INPUT_FILE: CSV, TSV, or Excel file containing variant data
@@ -46,7 +47,15 @@ def analyse(input_file, output, report, plot, verbose, config):
     
     try:
         # Initialise the analyser
-        analyser = SickleAnalyser(verbose=verbose)
+        enable_ml = not no_ml  # Invert the flag
+        analyser = SickleAnalyser(verbose=verbose, enable_ml=enable_ml)
+        
+        if verbose and enable_ml:
+            ml_info = analyser.get_ml_model_info()
+            if ml_info['status'] == 'trained':
+                click.echo("[OK] Machine learning model ready for severity prediction")
+            else:
+                click.echo("[WARNING] ML model not available, using rule-based predictions only")
         
         # Load configuration if provided
         if config:
@@ -136,6 +145,51 @@ Visualisation Options:
   " Severity prediction with confidence intervals
     """
     click.echo(info_text)
+
+
+@cli.command()
+@click.option('--verbose', '-v', is_flag=True, help='Show detailed model information')
+def ml_info(verbose):
+    """Display machine learning model information and status."""
+    click.echo("SickleScope Machine Learning Model Information")
+    click.echo("=" * 50)
+    
+    try:
+        # Initialize analyser to get ML info
+        analyser = SickleAnalyser(verbose=False, enable_ml=True)
+        ml_info = analyser.get_ml_model_info()
+        
+        status = ml_info.get('status', 'unknown')
+        click.echo(f"Model Status: {status}")
+        
+        if status == 'trained':
+            click.echo(f"[OK] ML model is trained and ready")
+            click.echo(f"Model Type: {ml_info.get('model_type', 'unknown')}")
+            click.echo(f"Feature Count: {ml_info.get('feature_count', 0)}")
+            
+            severity_categories = ml_info.get('severity_categories', [])
+            if severity_categories:
+                click.echo(f"Prediction Categories: {', '.join(severity_categories)}")
+            
+            if verbose and 'feature_importance' in ml_info:
+                click.echo("\nFeature Importance:")
+                importance = ml_info['feature_importance']
+                sorted_features = sorted(importance.items(), key=lambda x: x[1], reverse=True)
+                for feature, score in sorted_features:
+                    click.echo(f"  {feature}: {score:.3f}")
+                    
+        elif status == 'disabled':
+            click.echo("[WARNING] ML predictions are disabled")
+        elif status == 'not_trained':
+            click.echo("[WARNING] ML model is not trained")
+        else:
+            click.echo("[ERROR] ML model status unknown")
+            
+    except Exception as e:
+        click.echo(f"Error getting ML info: {str(e)}", err=True)
+        if verbose:
+            import traceback
+            traceback.print_exc()
 
 
 if __name__ == '__main__':

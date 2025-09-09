@@ -295,23 +295,23 @@ class TestVisualisationEdgeCases:
                 # Some plots might not work with single points - that's okay
                 pass
     
-    def test_invalid_output_path(self, visualiser, sample_results):
+    def test_invalid_output_path(self, visualiser, sample_analysis_results):
         """Test plotting with invalid output path."""
         # Try to save to a directory that doesn't exist and can't be created
         invalid_path = "/invalid/nonexistent/path/plot.png"
         
         with pytest.raises((OSError, FileNotFoundError, PermissionError)):
-            visualiser.plot_risk_score_distribution(sample_results, invalid_path)
+            visualiser.plot_variant_distribution(sample_analysis_results, invalid_path)
     
     @patch('matplotlib.pyplot.savefig', side_effect=Exception("Mock save error"))
-    def test_save_error_handling(self, mock_savefig, visualiser, sample_results):
+    def test_save_error_handling(self, mock_savefig, visualiser, sample_analysis_results):
         """Test handling of save errors."""
         with tempfile.TemporaryDirectory() as temp_dir:
             output_path = Path(temp_dir) / 'error_plot.png'
             
             # Should raise the exception from savefig
             with pytest.raises(Exception, match="Mock save error"):
-                visualiser.plot_variant_distribution(sample_results, str(output_path))
+                visualiser.plot_variant_distribution(sample_analysis_results, str(output_path))
 
 
 # Sample fixture data that can be used across multiple test modules

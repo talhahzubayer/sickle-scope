@@ -98,7 +98,7 @@ class TestCLI:
         result = runner.invoke(cli, ['analyse', sample_csv_file])
         
         assert result.exit_code == 0
-        mock_analyser_class.assert_called_once_with(verbose=False)
+        mock_analyser_class.assert_called_once_with(verbose=False, enable_ml=True)
         mock_analyser.analyse_file.assert_called_once_with(sample_csv_file)
     
     @patch('sickle_scope.cli.SickleAnalyser')
@@ -111,7 +111,7 @@ class TestCLI:
         result = runner.invoke(cli, ['analyse', sample_csv_file, '--verbose'])
         
         assert result.exit_code == 0
-        mock_analyser_class.assert_called_once_with(verbose=True)
+        mock_analyser_class.assert_called_once_with(verbose=True, enable_ml=True)
         assert 'Analysing variants from:' in result.output
     
     @patch('sickle_scope.cli.SickleAnalyser')

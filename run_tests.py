@@ -37,7 +37,7 @@ def main():
         print("  fast    - Run core analyser and CLI tests only (recommended for development)")
         print("  full    - Run all tests including integration and visualisation")
         print("  coverage - Run core tests with detailed coverage report")
-        print("  ci      - Run tests suitable for CI/CD (fast, no visualization)")
+        print("  ci      - Run tests suitable for CI/CD (fast, no visualisation)")
         return
     
     mode = sys.argv[1].lower()
@@ -66,7 +66,7 @@ def main():
         return run_command(cmd)
     
     elif mode == 'full':
-        # Full test suite including integration and visualization
+        # Full test suite including integration and visualisation
         cmd = [
             sys.executable, '-m', 'pytest',
             'tests/',

@@ -1,6 +1,0 @@
-chromosome,position,ref_allele,alt_allele,genotype,variant_name,variant_classification,risk_score,severity_category,severity_description,clinical_management,risk_level
-11,5248232,A,T,1/1,novel_variant,uncertain,1.2,minimal_risk,No sickle cell disease,No intervention needed,Minimal
-11,5248158,G,A,0/1,novel_variant,uncertain,0.6,minimal_risk,No sickle cell disease,No intervention needed,Minimal
-11,5247359,G,A,1/1,novel_variant,uncertain,1.2,minimal_risk,No sickle cell disease,No intervention needed,Minimal
-11,5248000,C,G,0/1,novel_variant,uncertain,0.6,minimal_risk,No sickle cell disease,No intervention needed,Minimal
-11,5249000,T,A,0/0,wild_type,benign,0.0,minimal_risk,No sickle cell disease,No intervention needed,Minimal

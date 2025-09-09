@@ -48,9 +48,21 @@ class SickleVisualiser:
             'uncertain': '#95a5a6'         # Gray
         }
         
-        # Apply style
+        # ML prediction colors
+        self.ml_severity_colors = {
+            'normal': '#2ecc71',      # Green
+            'mild': '#f39c12',        # Orange
+            'moderate': '#e67e22',    # Dark orange  
+            'severe': '#e74c3c'       # Red
+        }
+        
+        # Apply style with error handling for deprecated styles
         if style != 'default':
-            plt.style.use(style)
+            try:
+                plt.style.use(style)
+            except OSError:
+                # Fallback to default if style is not available (e.g., 'seaborn' in newer matplotlib)
+                plt.style.use('default')
     
     def plot_risk_score_gauge(self, risk_score: float, variant_name: str = "Unknown", 
                              save_path: Optional[Union[str, Path]] = None) -> plt.Figure:
@@ -321,6 +333,158 @@ class SickleVisualiser:
         
         return fig
     
+    def plot_ml_predictions(self, results: pd.DataFrame, 
+                           save_path: Optional[Union[str, Path]] = None,
+                           figsize: Optional[Tuple[int, int]] = None) -> None:
+        """Create visualisations for ML predictions.
+        
+        Args:
+            results: DataFrame with analysis results including ML predictions
+            save_path: Path to save the plot (optional)
+            figsize: Figure size (optional)
+        """
+        if 'ml_predicted_severity' not in results.columns:
+            print("Warning: No ML predictions found in results")
+            return
+        
+        figsize = figsize or self.default_figsize
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+        
+        # 1. ML Severity Distribution
+        ml_counts = results['ml_predicted_severity'].value_counts()
+        colors = [self.ml_severity_colors.get(severity, '#95a5a6') for severity in ml_counts.index]
+        
+        ax1.pie(ml_counts.values, labels=ml_counts.index, colors=colors, autopct='%1.1f%%', startangle=90)
+        ax1.set_title('ML Predicted Severity Distribution', fontsize=14, fontweight='bold')
+        
+        # 2. Confidence Score Distribution
+        if 'ml_confidence_score' in results.columns:
+            ax2.hist(results['ml_confidence_score'], bins=20, alpha=0.7, color='#3498db', edgecolor='black')
+            ax2.set_xlabel('Confidence Score')
+            ax2.set_ylabel('Frequency')
+            ax2.set_title('ML Prediction Confidence Distribution', fontsize=14, fontweight='bold')
+            ax2.axvline(results['ml_confidence_score'].mean(), color='red', linestyle='--', 
+                       label=f'Mean: {results["ml_confidence_score"].mean():.3f}')
+            ax2.legend()
+        
+        # 3. Confidence vs Risk Score
+        if 'ml_confidence_score' in results.columns:
+            scatter = ax3.scatter(results['risk_score'], results['ml_confidence_score'], 
+                                c=results['ml_predicted_severity'].map(self.ml_severity_colors),
+                                alpha=0.6, s=50)
+            ax3.set_xlabel('Risk Score')
+            ax3.set_ylabel('ML Confidence Score')
+            ax3.set_title('Risk Score vs ML Confidence', fontsize=14, fontweight='bold')
+            
+            # Add legend for severity colors
+            handles = [plt.scatter([], [], c=color, label=severity) 
+                      for severity, color in self.ml_severity_colors.items() 
+                      if severity in results['ml_predicted_severity'].values]
+            ax3.legend(handles=handles, title='ML Predicted Severity')
+        
+        # 4. ML Probability Heatmap
+        prob_columns = [col for col in results.columns if col.startswith('ml_prob_')]
+        if prob_columns:
+            prob_data = results[prob_columns].T
+            prob_data.index = [col.replace('ml_prob_', '') for col in prob_data.index]
+            
+            sns.heatmap(prob_data.iloc[:, :min(10, len(prob_data.columns))], 
+                       annot=True, fmt='.3f', cmap='YlOrRd', ax=ax4)
+            ax4.set_title('ML Probability Heatmap (First 10 Variants)', fontsize=14, fontweight='bold')
+            ax4.set_xlabel('Variant Index')
+            ax4.set_ylabel('Severity Category')
+        
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+    
+    def plot_prediction_comparison(self, results: pd.DataFrame,
+                                  save_path: Optional[Union[str, Path]] = None,
+                                  figsize: Optional[Tuple[int, int]] = None) -> None:
+        """Compare rule-based and ML predictions.
+        
+        Args:
+            results: DataFrame with analysis results
+            save_path: Path to save the plot (optional)
+            figsize: Figure size (optional)
+        """
+        if 'ml_predicted_severity' not in results.columns:
+            print("Warning: No ML predictions found in results")
+            return
+        
+        figsize = figsize or (15, 10)
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=figsize)
+        
+        # 1. Side-by-side comparison
+        rule_counts = results['severity_category'].value_counts()
+        ml_counts = results['ml_predicted_severity'].value_counts()
+        
+        all_categories = sorted(set(rule_counts.index) | set(ml_counts.index))
+        rule_values = [rule_counts.get(cat, 0) for cat in all_categories]
+        ml_values = [ml_counts.get(cat, 0) for cat in all_categories]
+        
+        x = np.arange(len(all_categories))
+        width = 0.35
+        
+        ax1.bar(x - width/2, rule_values, width, label='Rule-based', alpha=0.8, color='#3498db')
+        ax1.bar(x + width/2, ml_values, width, label='ML Predictions', alpha=0.8, color='#e74c3c')
+        
+        ax1.set_xlabel('Severity Category')
+        ax1.set_ylabel('Count')
+        ax1.set_title('Rule-based vs ML Predictions', fontsize=14, fontweight='bold')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels(all_categories, rotation=45)
+        ax1.legend()
+        
+        # 2. Agreement matrix (simplified)
+        agreement = (results['severity_category'] == results['ml_predicted_severity'])
+        agreement_pct = agreement.mean() * 100
+        disagreement_pct = 100 - agreement_pct
+        
+        ax2.pie([agreement_pct, disagreement_pct], labels=['Agreement', 'Disagreement'], 
+                colors=['#2ecc71', '#e74c3c'], autopct='%1.1f%%', startangle=90)
+        ax2.set_title('Rule-based vs ML Agreement', fontsize=14, fontweight='bold')
+        
+        # 3. Risk Score vs ML Confidence colored by agreement
+        if 'ml_confidence_score' in results.columns:
+            colors = ['green' if agree else 'red' for agree in agreement]
+            
+            ax3.scatter(results['risk_score'], results['ml_confidence_score'], 
+                       c=colors, alpha=0.6, s=50)
+            ax3.set_xlabel('Risk Score')
+            ax3.set_ylabel('ML Confidence Score')
+            ax3.set_title('Risk vs Confidence (Green=Agreement, Red=Disagreement)', fontsize=12)
+            
+            # Add agreement statistics
+            ax3.text(0.05, 0.95, f'Agreement: {agreement_pct:.1f}%', 
+                    transform=ax3.transAxes, bbox=dict(boxstyle='round', facecolor='white'))
+        
+        # 4. Confidence distribution by agreement
+        if 'ml_confidence_score' in results.columns:
+            agree_conf = results[agreement]['ml_confidence_score']
+            disagree_conf = results[~agreement]['ml_confidence_score']
+            
+            if len(agree_conf) > 0 and len(disagree_conf) > 0:
+                ax4.hist([agree_conf, disagree_conf], bins=15, alpha=0.7, 
+                        label=['Agreement', 'Disagreement'], color=['green', 'red'])
+            elif len(agree_conf) > 0:
+                ax4.hist(agree_conf, bins=15, alpha=0.7, 
+                        label='Agreement', color='green')
+            else:
+                ax4.hist(disagree_conf, bins=15, alpha=0.7, 
+                        label='Disagreement', color='red')
+                        
+            ax4.set_xlabel('ML Confidence Score')
+            ax4.set_ylabel('Frequency')
+            ax4.set_title('Confidence Distribution by Agreement', fontsize=14, fontweight='bold')
+            ax4.legend()
+        
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+    
     def create_comprehensive_report_plots(self, results: pd.DataFrame, output_dir: Union[str, Path]) -> Dict[str, Path]:
         """Generate all visualisation plots and save to directory.
         
@@ -349,8 +513,21 @@ class SickleVisualiser:
         self.plot_risk_heatmap(results, plot_paths['risk_heatmap'])
         plt.close()
         
-        # Skip severity prediction plot for now to avoid errors
-        # Will be implemented in future version
+        # 4. Severity prediction plot
+        plot_paths['severity_prediction'] = output_dir / 'severity_prediction.png'
+        self.plot_severity_prediction(results, plot_paths['severity_prediction'])
+        plt.close()
+        
+        # 5. ML predictions (if available)
+        if 'ml_predicted_severity' in results.columns:
+            plot_paths['ml_predictions'] = output_dir / 'ml_predictions.png'
+            self.plot_ml_predictions(results, plot_paths['ml_predictions'])
+            plt.close()
+            
+            # 6. Prediction comparison (if ML predictions available)
+            plot_paths['prediction_comparison'] = output_dir / 'prediction_comparison.png'
+            self.plot_prediction_comparison(results, plot_paths['prediction_comparison'])
+            plt.close()
         
         return plot_paths
     
@@ -379,5 +556,23 @@ class SickleVisualiser:
             stats['most_common_severity'] = results['severity_category'].mode().iloc[0]
         else:
             stats['most_common_severity'] = 'unknown'
+        
+        # ML-specific statistics
+        if 'ml_predicted_severity' in results.columns and len(results) > 0:
+            stats['ml_predictions_available'] = True
+            stats['ml_most_common_severity'] = results['ml_predicted_severity'].mode().iloc[0]
+            
+            if 'ml_confidence_score' in results.columns:
+                stats['mean_ml_confidence'] = float(results['ml_confidence_score'].mean())
+                stats['min_ml_confidence'] = float(results['ml_confidence_score'].min())
+                stats['max_ml_confidence'] = float(results['ml_confidence_score'].max())
+            
+            # Agreement between rule-based and ML predictions
+            if 'severity_category' in results.columns:
+                agreement = (results['severity_category'] == results['ml_predicted_severity'])
+                stats['prediction_agreement_rate'] = float(agreement.mean())
+                stats['prediction_disagreements'] = int((~agreement).sum())
+        else:
+            stats['ml_predictions_available'] = False
         
         return stats

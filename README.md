@@ -253,16 +253,16 @@ Complex analysis workflows including:
 - [x] Test notebook execution from start to finish
 
 ### Day 7: Testing & Bug Fixes
-- [x ] Write unit tests for all core functions
+- [x] Write unit tests for all core functions
 - [x] Create integration tests with sample data
 - [x] Fix any bugs discovered during testing
 - [x] Validate test coverage >80%
 
 ### Day 8: Machine Learning Integration
-- [ ] Implement Random Forest model for severity prediction
-- [ ] Create training dataset from literature sources
-- [ ] Add model validation and cross-validation
-- [ ] Test prediction accuracy
+- [x] Implement Random Forest model for severity prediction
+- [x] Create training dataset from literature sources
+- [x] Add model validation and cross-validation
+- [x] Test prediction accuracy
 
 ### Day 9: Advanced Visualisations
 - [ ] Create interactive Plotly visualisations for Jupyter

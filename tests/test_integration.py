@@ -328,7 +328,7 @@ class TestEndToEndWorkflow:
 class TestPerformanceAndScaling:
     """Tests for performance and scaling with larger datasets."""
     
-    def test_large_dataset_handling(self, temp_output_dir):
+    def test_large_dataset_handling(self, tmp_path):
         """Test analysis with larger dataset."""
         # Create larger synthetic dataset
         np_random = pytest.importorskip("numpy").random
@@ -342,7 +342,7 @@ class TestPerformanceAndScaling:
             'genotype': np_random.choice(['0/0', '0/1', '1/1'], n_variants)
         })
         
-        large_file = temp_output_dir / 'large_dataset.csv'
+        large_file = tmp_path / 'large_dataset.csv'
         large_data.to_csv(large_file, index=False)
         
         # Test analysis performance

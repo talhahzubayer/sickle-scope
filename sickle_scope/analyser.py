@@ -10,18 +10,21 @@ import json
 from pathlib import Path
 from typing import Tuple, List, Dict, Optional, Union
 import warnings
+from .ml_models import SeverityPredictor
 
 
 class SickleAnalyser:
     """Main class for analysing genetic variants related to sickle cell disease."""
     
-    def __init__(self, verbose: bool = False):
+    def __init__(self, verbose: bool = False, enable_ml: bool = True):
         """Initialise the SickleScope analyser.
         
         Args:
             verbose: Enable verbose logging
+            enable_ml: Enable machine learning severity prediction
         """
         self.verbose = verbose
+        self.enable_ml = enable_ml
         self.required_columns = [
             'chromosome', 'position', 'ref_allele', 'alt_allele', 'genotype'
         ]
@@ -36,8 +39,16 @@ class SickleAnalyser:
         self.config = self._load_default_config()
         self.hbb_variants_db = self._load_hbb_variants_database()
         
+        # Initialise ML predictor
+        self.ml_predictor = None
+        self.ml_trained = False
+        if self.enable_ml and self.hbb_variants_db:
+            self._initialise_ml_predictor()
+        
         if self.verbose:
             print("SickleAnalyser initialised successfully")
+            if self.enable_ml and self.ml_trained:
+                print("Machine learning severity predictor ready")
     
     def _load_default_config(self) -> Dict:
         """Load default configuration settings."""
@@ -78,6 +89,21 @@ class SickleAnalyser:
             if self.verbose:
                 print(f"Warning: Could not load HBB variants database: {e}")
             return {}
+    
+    def _initialise_ml_predictor(self) -> None:
+        """Initialise and train the ML severity predictor."""
+        try:
+            self.ml_predictor = SeverityPredictor(verbose=self.verbose)
+            training_results = self.ml_predictor.initialise_model(self.hbb_variants_db)
+            self.ml_trained = True
+            
+            if self.verbose:
+                print(f"ML model trained with {training_results['cv_mean_accuracy']:.3f} CV accuracy")
+                
+        except Exception as e:
+            if self.verbose:
+                print(f"Warning: Could not initialise ML predictor: {e}")
+            self.ml_trained = False
     
     def load_config(self, config_path: Union[str, Path]) -> None:
         """Load configuration from JSON file.
@@ -443,12 +469,59 @@ class SickleAnalyser:
         df['severity_description'] = [s['description'] for s in severity_predictions]
         df['clinical_management'] = [s['management'] for s in severity_predictions]
         
+        # Add ML predictions if enabled and model is trained
+        if self.enable_ml and self.ml_trained:
+            try:
+                ml_predictions = self.ml_predictor.predict_severity(df)
+                df['ml_predicted_severity'] = ml_predictions['predicted_severity']
+                df['ml_confidence_score'] = ml_predictions['confidence_score']
+                
+                # Add probability columns for ML predictions
+                for col in ml_predictions.columns:
+                    if col.startswith('prob_'):
+                        df[f'ml_{col}'] = ml_predictions[col]
+                
+                if self.verbose:
+                    print("Added ML severity predictions")
+                    
+            except Exception as e:
+                if self.verbose:
+                    print(f"Warning: ML prediction failed: {e}")
+        
         if self.verbose:
             pathogenic_count = df['is_pathogenic'].sum()
             print(f"Identified {pathogenic_count} potentially pathogenic variants")
         
         return df
     
+    def get_ml_model_info(self) -> Dict:
+        """Get information about the ML model.
+        
+        Returns:
+            Dictionary with ML model information
+        """
+        if not self.enable_ml:
+            return {'status': 'disabled'}
+        
+        if not self.ml_trained or self.ml_predictor is None:
+            return {'status': 'not_trained'}
+        
+        return self.ml_predictor.get_model_info()
+    
+    def retrain_ml_model(self) -> Dict:
+        """Retrain the ML model with current database.
+        
+        Returns:
+            Training results dictionary
+        """
+        if not self.enable_ml:
+            raise ValueError("ML is disabled for this analyser instance")
+        
+        if not self.hbb_variants_db:
+            raise ValueError("No HBB variants database available for training")
+        
+        self._initialise_ml_predictor()
+        return self.get_ml_model_info()
     
     def generate_report(self, results: pd.DataFrame, output_path: Union[str, Path]) -> None:
         """Generate HTML report of analysis results.
@@ -466,7 +539,7 @@ class SickleAnalyser:
         <h2>Summary</h2>
         <p>Total variants analysed: {len(results)}</p>
         <p>Pathogenic variants: {results['is_pathogenic'].sum()}</p>
-        <p>Severe risk variants: {(results['severity_prediction'] == 'severe').sum()}</p>
+        <p>Severe risk variants: {(results['severity_category'] == 'high_risk').sum()}</p>
         </body>
         </html>
         """
@@ -487,9 +560,9 @@ class SickleAnalyser:
         output_dir.mkdir(parents=True, exist_ok=True)
         
         if self.verbose:
-            print(f"Generating visualizations in: {output_dir}")
+            print(f"Generating visualisations in: {output_dir}")
         
-        # Initialize visualizer
+        # Initialise visualiser
         visualizer = SickleVisualiser()
         
         # Generate comprehensive plots
@@ -499,7 +572,7 @@ class SickleAnalyser:
         stats = visualizer.generate_summary_statistics(results)
         
         if self.verbose:
-            print(f"Generated {len(plot_paths)} visualization plots")
+            print(f"Generated {len(plot_paths)} visualisation plots")
             print(f"Summary: {stats['pathogenic_variants']} pathogenic, {stats['modifier_variants']} modifier variants")
             print(f"Mean risk score: {stats['mean_risk_score']:.2f}")
         

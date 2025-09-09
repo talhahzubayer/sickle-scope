@@ -11,6 +11,7 @@ plotly>=5.0.0          # Interactive visualisations
 # Data processing
 scipy>=1.7.0           # Scientific computing
 scikit-learn>=1.0.0    # Machine learning
+joblib>=1.0.0          # Model persistence
 
 # Testing
 pytest>=7.0.0          # Testing framework
