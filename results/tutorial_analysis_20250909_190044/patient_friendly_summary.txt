@@ -1,0 +1,27 @@
+Your Genetic Variant Analysis Results - Easy-to-Understand Summary
+======================================================================
+
+What This Test Looked For:
+-------------------------
+This analysis examined your genetic variants (DNA changes) related to
+sickle cell disease and other blood disorders. We looked at specific
+areas of your DNA to assess your genetic risk profile.
+
+Summary of Your Results (5 variants analyzed):
+----------------------------------------
+GOOD NEWS: Your genetic risk profile appears favorable.
+No immediate concerns identified.
+Continue regular healthcare as recommended by your doctor.
+
+Your highest risk score: 1.2 out of 100
+Your average risk score: 0.7 out of 100
+
+What Should You Do Next?
+-------------------------
+1. Share these results with your healthcare provider
+2. Ask questions about anything you don't understand
+3. Consider genetic counseling, especially if planning a family
+4. Keep these results for your medical records
+
+Remember: Having genetic variants doesn't always mean you will develop disease.
+Many factors affect your health, including lifestyle and environmental factors.

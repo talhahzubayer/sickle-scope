@@ -247,10 +247,10 @@ Complex analysis workflows including:
 - [x] Test visualisations with sample data
 
 ### Day 6: Jupyter Tutorial Notebook
-- [ ] Create comprehensive `tutorial.ipynb`
-- [ ] Add interactive examples with real data
-- [ ] Include step-by-step analysis explanations
-- [ ] Test notebook execution from start to finish
+- [x] Create comprehensive `tutorial.ipynb`
+- [x] Add interactive examples with real data
+- [x] Include step-by-step analysis explanations
+- [x] Test notebook execution from start to finish
 
 ### Day 7: Testing & Bug Fixes
 - [ ] Write unit tests for all core functions
