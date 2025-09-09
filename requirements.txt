@@ -11,3 +11,7 @@ plotly>=5.0.0          # Interactive visualisations
 # Data processing
 scipy>=1.7.0           # Scientific computing
 scikit-learn>=1.0.0    # Machine learning
+
+# Testing
+pytest>=7.0.0          # Testing framework
+pytest-cov>=4.0.0      # Coverage reporting

@@ -304,7 +304,7 @@ class SickleAnalyser:
         # Score based on variant classification and severity
         if variant_classification['classification'] == 'pathogenic':
             severity_score = variant_classification.get('severity_score', 5)
-            base_score = severity_score * weights['primary_mutation']
+            base_score = severity_score * weights.get('primary_mutation', 0.60)
             
         elif variant_classification['classification'] == 'modifier':
             # Modifier variants contribute negatively (protective effect)
@@ -312,14 +312,14 @@ class SickleAnalyser:
             gene = variant_classification.get('gene', 'other')
             
             if gene == 'BCL11A':
-                base_score = modifier_score * weights['bcl11a_modifiers']
+                base_score = modifier_score * weights.get('bcl11a_modifiers', 0.20)
             elif gene == 'HBS1L_MYB':
-                base_score = modifier_score * weights['hbs1l_myb_modifiers']
+                base_score = modifier_score * weights.get('hbs1l_myb_modifiers', 0.10)
             else:
-                base_score = modifier_score * weights['other_modifiers']
+                base_score = modifier_score * weights.get('other_modifiers', 0.10)
                 
         elif variant_classification['classification'] == 'uncertain':
-            base_score = variant_classification.get('severity_score', 2) * weights['primary_mutation']
+            base_score = variant_classification.get('severity_score', 2) * weights.get('primary_mutation', 0.60)
         
         # Adjust based on genotype (zygosity impact)
         genotype_multipliers = {
