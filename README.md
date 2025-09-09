@@ -265,10 +265,10 @@ Complex analysis workflows including:
 - [x] Test prediction accuracy
 
 ### Day 9: Advanced Visualisations
-- [ ] Create interactive Plotly visualisations for Jupyter
-- [ ] Implement advanced statistical plots (Manhattan plot style)
-- [ ] Add population comparison features
-- [ ] Test all visualisations in notebook environment
+- [x] Create interactive Plotly visualisations for Jupyter
+- [x] Implement advanced statistical plots (Manhattan plot style)
+- [x] Add population comparison features
+- [x] Test all visualisations in notebook environment
 
 ### Day 10: Documentation & Polish
 - [ ] Write comprehensive README with installation guide
