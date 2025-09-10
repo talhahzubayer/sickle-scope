@@ -1,17 +1,103 @@
 # SickleScope: Python Genomics Analysis Package
 SickleScope is a Python package for sickle cell disease variant analysis that provides instant genetic risk assessment with visualisations. Built to simplify genetic variant analysis Built without navigating complex pipelines.
 
+## Installation
+
+### Prerequisites
+- Python 3.9 or higher
+- pip package manager
+- Virtual environment (recommended)
+
+### Option 1: Install from PyPI (Recommended)
+```bash
+pip install sickle-scope
+```
+
+### Option 2: Development Installation
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/sickle-scope.git
+cd sickle-scope
+
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install in development mode
+pip install -e .
+```
+
+### Option 3: Direct Installation from Source
+```bash
+# Download and install directly
+pip install git+https://github.com/yourusername/sickle-scope.git
+```
+
+### Verify Installation
+```bash
+# Check if installation was successful
+python -c "import sickle_scope; print('SickleScope installed successfully!')"
+
+# View package information
+python -m sickle_scope.cli info
+```
+
+### Troubleshooting Installation
+
+#### Common Issues
+
+**Python Version Error**
+```bash
+# Check Python version (requires 3.9+)
+python --version
+
+# On some systems, use python3
+python3 --version
+```
+
+**Permission Errors**
+```bash
+# Install for current user only
+pip install --user sickle-scope
+
+# Or use virtual environment (recommended)
+python -m venv sickle_env
+source sickle_env/bin/activate  # Windows: sickle_env\Scripts\activate
+pip install sickle-scope
+```
+
+**Dependency Conflicts**
+```bash
+# Create clean environment
+python -m venv clean_env
+source clean_env/bin/activate
+pip install --upgrade pip
+pip install sickle-scope
+```
+
+**Missing System Dependencies**
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install python3-dev python3-pip
+
+# macOS with Homebrew
+brew install python
+
+# Windows: Download Python from python.org
+```
+
 ## Quick Start
 
 ```bash
-# Install package
-pip install sickle-scope
-
 # Analyse variants
 sickle-analyse input.csv --output results/
 
 # Generate comprehensive report
 sickle-analyse input.csv --report --plot
+
+# Quick validation
+sickle-analyse validate input.csv
 ```
 
 ## Architecture
@@ -25,6 +111,7 @@ sickle-scope/
 │   ├── analyser.py            # Core analysis engine
 │   ├── visualiser.py          # Plotting functions
 │   ├── ml_models.py           # Machine learning models
+│   ├── utils.py               # Performance optimisation utilities
 │   └── data/                  # Reference databases
 │       └── hbb_variants.json  # Curated HBB pathogenic variants and modifiers
 ├── notebooks/
@@ -316,10 +403,10 @@ Complex analysis workflows including:
 - [x] Test all visualisations in notebook environment
 
 ### Day 10: Documentation & Polish
-- [ ] Write comprehensive README with installation guide
-- [ ] Document all functions with detailed docstrings
-- [ ] Create API documentation
-- [ ] Optimise code performance and memory usage
+- [x] Write comprehensive README with installation guide
+- [x] Document all functions with detailed docstrings
+- [x] Create API documentation
+- [x] Optimise code performance and memory usage
 
 ### Day 11: Package Finalisation
 - [ ] Add comprehensive error handling and user-friendly messages

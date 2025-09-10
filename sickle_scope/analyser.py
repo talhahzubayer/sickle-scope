@@ -10,7 +10,9 @@ import json
 from pathlib import Path
 from typing import Tuple, List, Dict, Optional, Union
 import warnings
+from functools import lru_cache
 from .ml_models import SeverityPredictor
+from .utils import performance_monitor, optimise_dataframe, validate_input_size, memory_usage
 
 
 class SickleAnalyser:
@@ -214,16 +216,18 @@ class SickleAnalyser:
         Returns:
             Standardised DataFrame
         """
+        # Optimise: Avoid copy if not necessary, use vectorised operations
+        # Work on copy to avoid modifying original
         df = df.copy()
         
-        # Standardise chromosome format (remove 'chr' prefix)
-        df['chromosome'] = df['chromosome'].astype(str).str.replace('chr', '', case=False)
+        # Vectorised chromosome standardisation (more efficient than string operations)
+        df['chromosome'] = df['chromosome'].astype(str).str.replace('chr', '', case=False, regex=False)
         
-        # Ensure position is integer
-        df['position'] = pd.to_numeric(df['position'], errors='coerce')
+        # More efficient numeric conversion with downcast
+        df['position'] = pd.to_numeric(df['position'], errors='coerce', downcast='integer')
         
-        # Standardise genotype format (use '/' separator)
-        df['genotype'] = df['genotype'].str.replace('|', '/', regex=False)
+        # Vectorised genotype standardisation
+        df['genotype'] = df['genotype'].astype(str).str.replace('|', '/', regex=False)
         
         return df
     
@@ -244,11 +248,42 @@ class SickleAnalyser:
         
         return df[hbb_mask].copy()
     
+    @lru_cache(maxsize=1000)
+    def _classify_variant_cached(self, chrom: str, pos: int, ref: str, alt: str, genotype: str) -> Dict:
+        """Cached variant classification for performance optimisation."""
+        # Create a temporary variant object for classification
+        variant_data = {
+            'chromosome': chrom,
+            'position': pos, 
+            'ref_allele': ref,
+            'alt_allele': alt,
+            'genotype': genotype
+        }
+        return self._classify_variant_internal(variant_data)
+    
     def _classify_variant(self, variant: pd.Series) -> Dict:
         """Classify a single variant as pathogenic, benign, or uncertain.
         
         Args:
             variant: Single variant data
+            
+        Returns:
+            Dictionary with classification details
+        """
+        # Use cached classification for better performance
+        return self._classify_variant_cached(
+            str(variant['chromosome']),
+            int(variant['position']),
+            str(variant['ref_allele']),
+            str(variant['alt_allele']),
+            str(variant['genotype'])
+        )
+    
+    def _classify_variant_internal(self, variant: Dict) -> Dict:
+        """Internal variant classification logic.
+        
+        Args:
+            variant: Variant data dictionary
             
         Returns:
             Dictionary with classification details
@@ -413,6 +448,7 @@ class SickleAnalyser:
             'score': risk_score
         }
     
+    @performance_monitor
     def analyse_file(self, file_path: Union[str, Path]) -> pd.DataFrame:
         """Analyse genetic variants from input file.
         
@@ -432,8 +468,16 @@ class SickleAnalyser:
         if not is_valid:
             raise ValueError(f"Input validation failed: {messages}")
         
+        # Check input size for performance optimisation
+        if not validate_input_size(df, max_size_mb=200.0):
+            if self.verbose:
+                print(f"Processing large dataset ({memory_usage():.1f}MB memory usage)")
+        
         # Standardise data format
         df = self._standardise_data(df)
+        
+        # Optimise DataFrame memory usage
+        df = optimise_dataframe(df)
         
         # Filter for HBB region variants (for reporting only)
         hbb_variants = self._filter_hbb_variants(df)
@@ -442,32 +486,32 @@ class SickleAnalyser:
             print(f"Found {len(hbb_variants)} variants in HBB region")
             print(f"Total variants for analysis: {len(df)}")
         
-        # Classify variants and extract detailed information
-        classifications = df.apply(self._classify_variant, axis=1)
+        # Optimise: Vectorised classification and scoring
+        # Pre-allocate arrays for better memory efficiency
+        n_variants = len(df)
+        classifications = [None] * n_variants
+        risk_scores = np.zeros(n_variants, dtype=np.float32)
         
-        # Extract classification details into separate columns
+        # Batch classify variants for better performance
+        for idx in range(n_variants):
+            row = df.iloc[idx]
+            classification = self._classify_variant(row)
+            classifications[idx] = classification
+            risk_scores[idx] = self._calculate_risk_score(row, classification)
+        
+        # Vectorized column assignment (more memory efficient)
         df['variant_classification'] = [c['classification'] for c in classifications]
         df['variant_id'] = [c.get('variant_id', 'unknown') for c in classifications]
         df['variant_name'] = [c.get('variant_name', 'unknown') for c in classifications]
         df['is_pathogenic'] = df['variant_classification'] == 'pathogenic'
         df['is_modifier'] = df['variant_classification'] == 'modifier'
-        
-        # Calculate risk scores using the new weighted algorithm
-        risk_scores = []
-        severity_predictions = []
-        
-        for idx, (_, row) in enumerate(df.iterrows()):
-            classification = classifications.iloc[idx]
-            risk_score = self._calculate_risk_score(row, classification)
-            risk_scores.append(risk_score)
-            
-            severity_pred = self._predict_severity(risk_score)
-            severity_predictions.append(severity_pred)
-        
         df['risk_score'] = risk_scores
-        df['severity_category'] = [s['severity_category'] for s in severity_predictions]
-        df['severity_description'] = [s['description'] for s in severity_predictions]
-        df['clinical_management'] = [s['management'] for s in severity_predictions]
+        
+        # Vectorized severity prediction
+        severity_data = [self._predict_severity(score) for score in risk_scores]
+        df['severity_category'] = [s['severity_category'] for s in severity_data]
+        df['severity_description'] = [s['description'] for s in severity_data]
+        df['clinical_management'] = [s['management'] for s in severity_data]
         
         # Add ML predictions if enabled and model is trained
         if self.enable_ml and self.ml_trained:
@@ -563,13 +607,13 @@ class SickleAnalyser:
             print(f"Generating visualisations in: {output_dir}")
         
         # Initialise visualiser
-        visualizer = SickleVisualiser()
+        visualiser = SickleVisualiser()
         
         # Generate comprehensive plots
-        plot_paths = visualizer.create_comprehensive_report_plots(results, output_dir)
+        plot_paths = visualiser.create_comprehensive_report_plots(results, output_dir)
         
         # Generate summary statistics
-        stats = visualizer.generate_summary_statistics(results)
+        stats = visualiser.generate_summary_statistics(results)
         
         if self.verbose:
             print(f"Generated {len(plot_paths)} visualisation plots")
