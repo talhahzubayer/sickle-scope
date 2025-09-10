@@ -16,7 +16,7 @@ pip install sickle-scope
 ### Option 2: Development Installation
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/sickle-scope.git
+git clone https://github.com/talhahzubayer/sickle-scope.git
 cd sickle-scope
 
 # Create and activate virtual environment
@@ -30,7 +30,7 @@ pip install -e .
 ### Option 3: Direct Installation from Source
 ```bash
 # Download and install directly
-pip install git+https://github.com/yourusername/sickle-scope.git
+pip install git+https://github.com/talhahzubayer/sickle-scope.git
 ```
 
 ### Verify Installation
@@ -440,7 +440,7 @@ Complex analysis workflows including:
 ### Development Setup
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/sickle-scope.git
+git clone https://github.com/talhahzubayer/sickle-scope.git
 cd sickle-scope
 
 # Create virtual environment
