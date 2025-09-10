@@ -107,7 +107,7 @@ python -m sickle_scope.cli analyse tests/sample_data/hbb_variants.csv \
   --verbose \
   --config custom_params.json
 
-# Interactive visualization mode
+# Interactive visualisation mode
 python -m sickle_scope.cli analyse variants.csv \
   --output results/ \
   --interactive-plots \
@@ -157,10 +157,10 @@ severity_predictions = predictor.predict_severity(results)
 predictor.plot_severity_prediction(severity_predictions)
 
 # Advanced Interactive Visualisations
-interactive_viz = InteractiveVisualiser()
-interactive_viz.create_plotly_dashboard(results, severity_predictions)
-interactive_viz.plot_population_comparison(results)
-interactive_viz.create_manhattan_style_plot(results)
+interactive_visual = InteractiveVisualiser()
+interactive_visual.create_plotly_dashboard(results, severity_predictions)
+interactive_visual.plot_population_comparison(results)
+interactive_visual.create_manhattan_style_plot(results)
 
 # Export comprehensive results
 results.to_csv('sickle_analysis.csv')
@@ -254,10 +254,10 @@ Pre-loaded sample datasets demonstrating:
 Complex analysis workflows including:
 - Custom risk algorithms
 - Population comparison studies  
-- Machine learning model training and validation (Day 8)
-- Interactive Plotly dashboard creation (Day 9)
-- Severity prediction model optimization
-- Advanced statistical analysis with interactive visualizations
+- Machine learning model training and validation
+- Interactive Plotly dashboard creation
+- Severity prediction model optimisation
+- Advanced statistical analysis with interactive visualisations
 
 ## Development Roadmap (14-Day Sprint)
 
