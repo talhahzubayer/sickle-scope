@@ -24,14 +24,19 @@ sickle-scope/
 │   ├── cli.py              # Command-line interface
 │   ├── analyser.py         # Core analysis engine
 │   ├── visualiser.py       # Plotting functions
-│   ├── data/               # Reference databases
-│   └── utils.py            # Helper functions
+│   ├── ml_models.py        # Machine learning models
+│   └── data/               # Reference databases
+│       └── hbb_variants.json  # Curated HBB pathogenic variants and modifiers
 ├── notebooks/
 │   ├── tutorial.ipynb      # Step-by-step guide
 │   ├── examples.ipynb      # Sample analyses
 │   └── advanced.ipynb      # Deep-dive analysis
 ├── tests/
-│   ├── test_analyser.py
+│   ├── __init__.py
+│   ├── test_analyser.py    # Core analysis tests
+│   ├── test_cli.py         # CLI interface tests
+│   ├── test_integration.py # Integration tests
+│   ├── test_visualiser.py  # Visualisation tests
 │   └── sample_data/        # Test input files
 │       ├── test_variants.csv
 │       ├── hbb_variants.csv
@@ -40,6 +45,7 @@ sickle-scope/
 │   ├── sickle_analysis.csv # Analysis results
 │   ├── sickle_report.html  # HTML report
 │   └── plots/              # Visualisation plots
+├── run_tests.py            # Test runner script
 ├── setup.py
 ├── requirements.txt
 └── README.md
@@ -186,12 +192,18 @@ def train_severity_model(training_data):
 ### Built-in Reference Databases
 ```python
 reference_data = {
-    'hbb_variants': 'data/hbb_pathogenic_variants.json',
-    'modifiers': 'data/scd_modifiers.json',
-    'population_freq': 'data/gnomad_scd_subset.json',
-    'clinical_studies': 'data/phenotype_correlations.json'
+    'hbb_variants': 'data/hbb_variants.json'  # Primary reference database
 }
 ```
+
+The `hbb_variants.json` file contains a comprehensive collection of:
+- **Pathogenic HBB variants**: Including HbS (rs334), HbC, HbE and other clinically significant variants
+- **Protective modifiers**: BCL11A, KLF1, and other genetic factors that modify disease severity
+- **Population frequencies**: Allele frequencies across different populations (gnomAD, 1000 Genomes)
+- **Clinical annotations**: HGVS nomenclature, amino acid changes, pathogenicity scores
+- **Metadata**: Reference genome (GRCh38), data sources (ClinVar, OMIM, dbSNP), last updated in 8th September 2025
+
+This database enables the package to work offline and provides standardised variant classification without requiring external API calls.
 
 ## Interactive Notebooks
 
