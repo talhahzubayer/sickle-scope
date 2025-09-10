@@ -21,11 +21,11 @@ sickle-analyse input.csv --report --plot
 sickle-scope/
 ├── sickle_scope/
 │   ├── __init__.py
-│   ├── cli.py              # Command-line interface
-│   ├── analyser.py         # Core analysis engine
-│   ├── visualiser.py       # Plotting functions
-│   ├── ml_models.py        # Machine learning models
-│   └── data/               # Reference databases
+│   ├── cli.py                 # Command-line interface
+│   ├── analyser.py            # Core analysis engine
+│   ├── visualiser.py          # Plotting functions
+│   ├── ml_models.py           # Machine learning models
+│   └── data/                  # Reference databases
 │       └── hbb_variants.json  # Curated HBB pathogenic variants and modifiers
 ├── notebooks/
 │   ├── tutorial.ipynb      # Step-by-step guide
@@ -98,30 +98,48 @@ python -m sickle_scope.cli validate variants.csv
 # Get package information
 python -m sickle_scope.cli info
 
-# Full workflow example
+# Full workflow with ML severity prediction
 python -m sickle_scope.cli analyse tests/sample_data/hbb_variants.csv \
   --output my_analysis/ \
   --report \
   --plot \
+  --predict-severity \
   --verbose \
   --config custom_params.json
+
+# Interactive visualization mode
+python -m sickle_scope.cli analyse variants.csv \
+  --output results/ \
+  --interactive-plots \
+  --population-compare \
+  --manhattan-plot
 ```
 
 ### Output Directory Structure
 When using `--output results/`, SickleScope creates an organised directory structure:
 ```
 results/
-├── sickle_analysis.csv     # Main results file with variant classifications
-├── sickle_report.html      # Comprehensive HTML report (--report flag)
-└── plots/                  # Visualisation directory (--plot flag)
+├── sickle_analysis.csv        # Main results file with variant classifications
+├── severity_predictions.csv   # ML severity predictions
+├── sickle_report.html         # Comprehensive HTML report (--report flag)
+├── interactive_dashboard.html # Interactive Plotly dashboard
+└── plots/                     # Visualisation directory (--plot flag)
     ├── risk_score_plot.png
     ├── variant_distribution.png
-    └── severity_prediction.png
+    ├── severity_prediction.png      # ML model outputs
+    ├── population_comparison.png    # Population analysis plots
+    ├── manhattan_plot.html          # Interactive Manhattan-style plot
+    └── interactive/                 # Interactive Plotly visualisations
+        ├── risk_dashboard.html
+        ├── variant_explorer.html
+        └── severity_heatmap.html
 ```
 
 ### Python API
 ```python
 from sickle_scope import SickleAnalyser
+from sickle_scope.ml_models import SeverityPredictor
+from sickle_scope.visualiser import InteractiveVisualiser
 
 # Initialise analyser
 analyser = SickleAnalyser()
@@ -129,12 +147,24 @@ analyser = SickleAnalyser()
 # Load and analyse data
 results = analyser.analyse_csv('variants.csv')
 
-# Generate visualisations
+# Generate basic visualisations
 analyser.plot_risk_score(results)
 analyser.plot_variant_distribution(results)
 
-# Export results
+# Machine Learning - Severity Prediction
+predictor = SeverityPredictor()
+severity_predictions = predictor.predict_severity(results)
+predictor.plot_severity_prediction(severity_predictions)
+
+# Advanced Interactive Visualisations
+interactive_viz = InteractiveVisualiser()
+interactive_viz.create_plotly_dashboard(results, severity_predictions)
+interactive_viz.plot_population_comparison(results)
+interactive_viz.create_manhattan_style_plot(results)
+
+# Export comprehensive results
 results.to_csv('sickle_analysis.csv')
+severity_predictions.to_csv('severity_predictions.csv')
 ```
 
 ### Risk Scoring Algorithm
@@ -223,8 +253,11 @@ Pre-loaded sample datasets demonstrating:
 ### Advanced.ipynb
 Complex analysis workflows including:
 - Custom risk algorithms
-- Population comparison studies
-- Machine learning model training
+- Population comparison studies  
+- Machine learning model training and validation (Day 8)
+- Interactive Plotly dashboard creation (Day 9)
+- Severity prediction model optimization
+- Advanced statistical analysis with interactive visualizations
 
 ## Development Roadmap (14-Day Sprint)
 
