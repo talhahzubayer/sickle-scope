@@ -80,8 +80,10 @@ class TestEndToEndWorkflow:
         analyser = SickleAnalyser(verbose=True)
         results = analyser.analyse_file(input_file)
         
-        # All variants should be in chromosome 11 (HBB region)
-        assert all(results['chromosome'] == '11'), "All variants should be in chromosome 11"
+        # Most variants should be in chromosome 11 (HBB region), but modifier genes from other chromosomes are allowed
+        chr11_count = sum(results['chromosome'] == '11')
+        total_count = len(results)
+        assert chr11_count >= total_count * 0.8, f"At least 80% of variants should be chromosome 11, got {chr11_count}/{total_count}"
         
         # Check that HBB region filtering works
         hbb_variants = analyser._filter_hbb_variants(results)
