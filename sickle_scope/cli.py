@@ -6,8 +6,11 @@ This module provides the CLI for the SickleScope genomics analysis package.
 
 import click
 import os
+import sys
+import pandas as pd
 from pathlib import Path
 from .analyser import SickleAnalyser
+import traceback
 
 
 @click.group()
@@ -64,30 +67,87 @@ def analyse(input_file, output, report, plot, verbose, config, no_ml):
                 click.echo(f"Loaded configuration from: {config}")
         
         # Perform analysis
-        click.echo("Starting variant analysis...")
+        click.echo("[INFO] Starting variant analysis...")
         results = analyser.analyse_file(input_file)
+        
+        # Display analysis summary
+        total_variants = len(results)
+        if 'classification' in results.columns:
+            pathogenic_variants = len(results[results['classification'] == 'Pathogenic'])
+        else:
+            pathogenic_variants = 0
+        click.echo(f"\n[SUCCESS] Analysis completed successfully!")
+        click.echo(f"[INFO] Processed {total_variants} variants")
+        if pathogenic_variants > 0:
+            click.echo(f"[WARNING] Found {pathogenic_variants} pathogenic variants")
+        else:
+            click.echo("[SUCCESS] No pathogenic variants detected")
         
         # Save results
         output_file = output_path / "sickle_analysis.csv" if output else "sickle_analysis.csv"
         results.to_csv(output_file, index=False)
-        click.echo(f"Analysis complete. Results saved to: {output_file}")
+        click.echo(f"\n[OUTPUT] Results saved to: {output_file}")
         
         # Generate report if requested
         if report:
             report_file = output_path / "sickle_report.html" if output else "sickle_report.html"
+            click.echo("\n[REPORT] Generating comprehensive report...")
             analyser.generate_report(results, report_file)
-            click.echo(f"Report generated: {report_file}")
+            click.echo(f"[OUTPUT] HTML report generated: {report_file}")
         
         # Generate plots if requested
         if plot:
             plot_dir = output_path / "plots" if output else Path("plots")
             plot_dir.mkdir(exist_ok=True)
+            click.echo("\n[PLOTS] Generating visualisation plots...")
             analyser.generate_plots(results, plot_dir)
-            click.echo(f"Plots saved to: {plot_dir}")
+            click.echo(f"[OUTPUT] Visualisation plots saved to: {plot_dir}")
             
+        click.echo(f"\n[COMPLETE] SickleScope analysis finished successfully!")
+            
+    except FileNotFoundError as e:
+        click.echo(f"[ERROR] File not found: {input_file}", err=True)
+        click.echo("Please check that the file path is correct and the file exists.", err=True)
+        sys.exit(1)
+    except PermissionError as e:
+        click.echo(f"[ERROR] Permission denied: Cannot access {input_file}", err=True)
+        click.echo("Please check file permissions or run with appropriate privileges.", err=True)
+        sys.exit(1)
+    except pd.errors.EmptyDataError:
+        click.echo(f"[ERROR] Empty file: {input_file} contains no data", err=True)
+        click.echo("Please provide a file with variant data.", err=True)
+        sys.exit(1)
+    except pd.errors.ParserError as e:
+        click.echo(f"[ERROR] File parsing error: {input_file} is not in a valid format", err=True)
+        click.echo("Supported formats: CSV, TSV, Excel (.xlsx)", err=True)
+        click.echo(f"Parser error: {str(e)}", err=True)
+        sys.exit(1)
+    except KeyError as e:
+        click.echo(f"[ERROR] Missing required column: {str(e)}", err=True)
+        click.echo("Required columns: chromosome, position, ref_allele, alt_allele, genotype", err=True)
+        click.echo("Use 'sickle-analyse validate <file>' to check your data format.", err=True)
+        sys.exit(1)
+    except ValueError as e:
+        click.echo(f"[ERROR] Data validation error: {str(e)}", err=True)
+        click.echo("Please check your data format and try again.", err=True)
+        sys.exit(1)
+    except MemoryError:
+        click.echo("[ERROR] Out of memory: File is too large to process", err=True)
+        click.echo("Try processing a smaller subset of your data.", err=True)
+        sys.exit(1)
+    except ImportError as e:
+        click.echo(f"[ERROR] Missing dependency: {str(e)}", err=True)
+        click.echo("Run 'pip install sickle-scope[dev]' to install all dependencies.", err=True)
+        sys.exit(1)
     except Exception as e:
-        click.echo(f"Error during analysis: {str(e)}", err=True)
-        raise click.Abort()
+        click.echo(f"[ERROR] Unexpected error during analysis: {str(e)}", err=True)
+        if verbose:
+            click.echo("\n=== Debug Information ===", err=True)
+            traceback.print_exc()
+            click.echo("========================\n", err=True)
+        click.echo("If this error persists, please report it at:", err=True)
+        click.echo("https://github.com/talhahzubayer/sickle-scope/issues", err=True)
+        sys.exit(1)
 
 
 @cli.command()
@@ -108,9 +168,25 @@ def validate(input_file):
             for message in messages:
                 click.echo(f"  - {message}")
             
+    except FileNotFoundError:
+        click.echo(f"[ERROR] File not found: {input_file}", err=True)
+        click.echo("Please check that the file path is correct and the file exists.", err=True)
+        sys.exit(1)
+    except PermissionError:
+        click.echo(f"[ERROR] Permission denied: Cannot access {input_file}", err=True)
+        click.echo("Please check file permissions.", err=True)
+        sys.exit(1)
+    except pd.errors.EmptyDataError:
+        click.echo(f"[ERROR] Empty file: {input_file} contains no data", err=True)
+        sys.exit(1)
+    except pd.errors.ParserError as e:
+        click.echo(f"[ERROR] File parsing error: Invalid format", err=True)
+        click.echo("Supported formats: CSV, TSV, Excel (.xlsx)", err=True)
+        sys.exit(1)
     except Exception as e:
-        click.echo(f"Error during validation: {str(e)}", err=True)
-        raise click.Abort()
+        click.echo(f"[ERROR] Validation error: {str(e)}", err=True)
+        click.echo("Please check your file format and try again.", err=True)
+        sys.exit(1)
 
 
 @cli.command()
@@ -185,11 +261,17 @@ def ml_info(verbose):
         else:
             click.echo("[ERROR] ML model status unknown")
             
+    except ImportError as e:
+        click.echo(f"[ERROR] Missing ML dependencies: {str(e)}", err=True)
+        click.echo("Install with: pip install sickle-scope[dev]", err=True)
+        sys.exit(1)
     except Exception as e:
-        click.echo(f"Error getting ML info: {str(e)}", err=True)
+        click.echo(f"[ERROR] Error getting ML info: {str(e)}", err=True)
         if verbose:
-            import traceback
+            click.echo("\n=== Debug Information ===", err=True)
             traceback.print_exc()
+            click.echo("========================\n", err=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

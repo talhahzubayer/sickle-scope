@@ -15,6 +15,7 @@ setup(
     description="A genomic analysis tool for sickle cell disease variants",
     long_description=long_description,
     long_description_content_type="text/markdown",
+    license="MIT",
     
     # Project URLs
     url="https://github.com/talhahzubayer/sickle-scope",
@@ -32,8 +33,12 @@ setup(
     # Classifiers help users find the project
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Intended Audience :: Academic/Research",
-        "Topic :: Scientific/Engineering :: Bioinformatics",
+        "Intended Audience :: Healthcare Industry",
+        "Intended Audience :: Science/Research",
+        "License :: OSI Approved :: MIT License",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Topic :: Scientific/Engineering :: Medical Science Apps.",
+        "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -50,6 +55,10 @@ setup(
         "numpy>=1.21.0",       # For numerical operations
         "matplotlib>=3.4.0",   # For plotting
         "seaborn>=0.11.0",     # For statistical visualisations
+        "plotly>=5.0.0",       # For interactive visualisations
+        "scipy>=1.7.0",        # For scientific computing
+        "scikit-learn>=1.0.0", # For machine learning
+        "joblib>=1.0.0",       # For model persistence
     ],
     
     # Optional dependencies for development

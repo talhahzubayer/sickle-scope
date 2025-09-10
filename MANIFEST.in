@@ -1,0 +1,21 @@
+# Include important documentation files
+include README.md
+include LICENSE
+include requirements.txt
+
+# Include package data files
+recursive-include sickle_scope/data *.json *.csv
+
+# Include test data files
+recursive-include tests/sample_data *.csv *.json
+
+# Include notebooks
+recursive-include notebooks *.ipynb
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~
+global-exclude __pycache__
+prune .git
+prune .pytest_cache
