@@ -2,6 +2,10 @@
 include README.md
 include LICENSE
 include requirements.txt
+include CHANGELOG.md
+include CONTRIBUTING.md
+include SECURITY.md
+include RELEASE_CHECKLIST.md
 
 # Include package data files
 recursive-include sickle_scope/data *.json *.csv
